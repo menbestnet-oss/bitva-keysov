@@ -77,6 +77,11 @@
   .nav-in{display:flex;align-items:center;justify-content:space-between;max-width:1120px;margin:0 auto;padding:16px 24px}
   nav.scrolled{background:rgba(7,11,31,.72);backdrop-filter:blur(14px);border-bottom:1px solid var(--card-bd)}
   .logo{display:flex;align-items:center;gap:10px;font-family:'Unbounded';font-weight:700;font-size:18px}
+  .brand-logo{height:30px;width:auto;opacity:.95}
+  .logo .divider{width:1px;height:22px;background:var(--card-bd)}
+  .hero-logo{height:74px;width:auto;margin:0 auto 6px;opacity:.96;animation:logoIn 1s cubic-bezier(.2,.8,.2,1) both;filter:drop-shadow(0 0 24px rgba(96,165,250,.35))}
+  @keyframes logoIn{from{opacity:0;transform:translateY(-16px) scale(.9)}to{opacity:.96;transform:none}}
+  .footer-logo{height:54px;width:auto;opacity:.85;margin-bottom:18px}
   .logo .sw{animation:swing 3s ease-in-out infinite;display:inline-block}
   @keyframes swing{0%,100%{transform:rotate(-12deg)}50%{transform:rotate(12deg)}}
   .nav-links{display:flex;gap:26px}
@@ -259,7 +264,7 @@
 <!-- NAV -->
 <nav id="nav">
   <div class="nav-in">
-    <div class="logo"><span class="sw">⚔️</span> Битва&nbsp;кейсов</div>
+    <div class="logo"><img src="logo.png" class="brand-logo" alt="Логотип Онлайн Школы Азата Валеева"><span class="divider"></span><span class="sw">⚔️</span> Битва&nbsp;кейсов</div>
     <div class="nav-links">
       <a href="#about">Суть</a>
       <a href="#case">Что такое кейс</a>
@@ -273,6 +278,7 @@
 
 <!-- HERO -->
 <header class="hero wrap">
+  <img src="logo.png" class="hero-logo" alt="Логотип Онлайн Школы Азата Валеева">
   <div class="reveal in"><span class="eyebrow">⚡ Внутрикорпоративный турнир · 30 дней</span></div>
   <h1 class="reveal in d1">Битва <span class="swords">⚔️</span> кейсов</h1>
   <p class="lead reveal in d2">Покажи, как <b class="grad">Claude</b> изменил твою работу. Реальная задача → реальный результат → реальные призы. Не теория — практика, которая остаётся с тобой.</p>
@@ -484,6 +490,7 @@
 </section>
 
 <footer class="wrap">
+  <img src="logo.png" class="footer-logo" alt="Логотип Онлайн Школы Азата Валеева">
   <div class="org">Организатор: HR-департамент · Координаторы: Емелина Е., Садриев И.</div>
   <div>Канал «Онлайн Школа Азата Валеева», раздел «Claude» · База кейсов на корпоративном портале</div>
   <div style="margin-top:14px;opacity:.6">⚔️ Битва кейсов · программа внедрения Claude в работу компании</div>
