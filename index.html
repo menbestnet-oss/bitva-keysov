@@ -213,6 +213,42 @@
   footer .org{margin-bottom:10px;color:var(--ink);font-weight:600}
 
   .count{font-variant-numeric:tabular-nums}
+
+  /* ===== Modal ===== */
+  .modal-overlay{position:fixed;inset:0;z-index:200;display:flex;align-items:center;justify-content:center;padding:24px;
+    background:rgba(4,8,24,.72);backdrop-filter:blur(8px);opacity:0;pointer-events:none;transition:opacity .35s}
+  .modal-overlay.open{opacity:1;pointer-events:auto}
+  .modal{position:relative;max-width:480px;width:100%;border-radius:26px;padding:44px 34px 36px;text-align:center;
+    background:linear-gradient(160deg,#101a3d,#0a1130);border:1px solid rgba(251,191,36,.35);
+    box-shadow:0 30px 80px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.04) inset,0 0 70px rgba(251,191,36,.15);
+    transform:translateY(30px) scale(.94);opacity:0;transition:transform .45s cubic-bezier(.2,.9,.25,1.2),opacity .35s}
+  .modal-overlay.open .modal{transform:none;opacity:1}
+  .modal .close{position:absolute;top:16px;right:18px;width:34px;height:34px;border:none;border-radius:50%;cursor:pointer;
+    background:rgba(255,255,255,.08);color:var(--muted);font-size:18px;line-height:1;transition:.2s}
+  .modal .close:hover{background:rgba(255,255,255,.16);color:#fff;transform:rotate(90deg)}
+  .ach{display:inline-flex;align-items:center;gap:8px;font-size:12px;font-weight:800;letter-spacing:2px;text-transform:uppercase;
+    color:var(--gold);padding:7px 16px;border-radius:999px;border:1px solid rgba(251,191,36,.4);background:rgba(251,191,36,.08);
+    margin-bottom:22px;animation:badgeIn .6s .1s both}
+  @keyframes badgeIn{from{opacity:0;transform:translateY(-10px) scale(.8)}to{opacity:1;transform:none}}
+  .modal .crest{font-size:74px;line-height:1;margin-bottom:6px;display:inline-block;animation:crestPop .7s cubic-bezier(.2,.9,.25,1.5) both;
+    filter:drop-shadow(0 0 26px rgba(251,191,36,.55))}
+  @keyframes crestPop{0%{opacity:0;transform:scale(.2) rotate(-25deg)}60%{transform:scale(1.15) rotate(8deg)}100%{opacity:1;transform:none}}
+  .modal .sw-l,.modal .sw-r{display:inline-block;animation:clash 2.6s ease-in-out infinite}
+  .modal .sw-r{transform:scaleX(-1)}
+  @keyframes clash{0%,100%{transform:translateX(0) rotate(0)}50%{transform:translateX(6px) rotate(-10deg)}}
+  .modal .sw-r{animation-name:clashR}
+  @keyframes clashR{0%,100%{transform:scaleX(-1) translateX(0)}50%{transform:scaleX(-1) translateX(6px) rotate(-10deg)}}
+  .modal h2{font-family:'Unbounded';font-size:30px;font-weight:800;margin:6px 0 12px;line-height:1.1}
+  .modal .quote{color:var(--ink);font-size:17px;line-height:1.55;min-height:52px;margin-bottom:8px}
+  .modal .quote b{color:var(--gold)}
+  .modal .sub{color:var(--muted);font-size:14px;margin-bottom:24px}
+  .modal .hashtag{display:inline-block;font-family:'Unbounded';font-size:13px;color:var(--cyan);background:rgba(34,211,238,.1);
+    padding:6px 14px;border-radius:10px;margin-bottom:24px;cursor:pointer;transition:.2s;border:1px solid rgba(34,211,238,.2)}
+  .modal .hashtag:hover{background:rgba(34,211,238,.2)}
+  .modal .hashtag.copied{color:var(--green);border-color:var(--green)}
+  .modal .go{width:100%;justify-content:center}
+  .confetti{position:fixed;top:-20px;z-index:210;width:10px;height:14px;border-radius:2px;pointer-events:none;will-change:transform}
+  @keyframes fall{to{transform:translateY(110vh) rotate(720deg);opacity:.9}}
 </style>
 </head>
 <body>
@@ -441,7 +477,7 @@
     <h2>Первый кейс — <span class="grad">сегодня</span></h2>
     <p>Один кейс в день первой недели — и ты в ТОП-5 лидеров. Дальше включается снежный ком. Выкладывай в чат «Claude» и забирай свои баллы.</p>
     <div class="cta" style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap">
-      <a href="#" class="btn btn-primary">🚀 Опубликовать первый кейс</a>
+      <button class="btn btn-primary" id="publishBtn">🚀 Опубликовать первый кейс</button>
       <a href="#case" class="btn btn-ghost">Вспомнить формулу кейса</a>
     </div>
   </div>
@@ -452,6 +488,20 @@
   <div>Канал «Онлайн Школа Азата Валеева», раздел «Claude» · База кейсов на корпоративном портале</div>
   <div style="margin-top:14px;opacity:.6">⚔️ Битва кейсов · программа внедрения Claude в работу компании</div>
 </footer>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modal">
+  <div class="modal" role="dialog" aria-modal="true">
+    <button class="close" id="modalClose" aria-label="Закрыть">✕</button>
+    <span class="ach">🏆 Достижение разблокировано</span>
+    <div class="crest"><span class="sw-l">⚔️</span>🔥<span class="sw-r">⚔️</span></div>
+    <h2 class="grad-gold">Ты — красавчик!</h2>
+    <p class="quote" id="modalQuote"></p>
+    <p class="sub">Упакуй кейс по формуле и отправляй в чат<br><b style="color:var(--ink)">«Онлайн Школа Азата Валеева» → раздел Claude</b></p>
+    <span class="hashtag" id="copyTag" title="Нажми, чтобы скопировать">#кейс_ФИО_лига&nbsp;&nbsp;⧉</span>
+    <a href="#" class="btn btn-primary go" id="goChat">📨 Отправить кейс в чат «Claude»</a>
+  </div>
+</div>
 
 <!-- sparks -->
 <script>
@@ -495,6 +545,64 @@
     })
   },{threshold:.6});
   document.querySelectorAll('[data-count]').forEach(el=>cio.observe(el));
+
+  /* ===== Modal + confetti ===== */
+  const modal=document.getElementById('modal');
+  const quoteEl=document.getElementById('modalQuote');
+  const quotes=[
+    'Пока другие думают «с чего начать» — ты уже <b>в бою</b>. 🔥',
+    'Один кейс в день — и ты в <b>ТОП-5 лидеров</b> к концу недели. 🚀',
+    'Это <b>+1 шаг к Гран-при</b>. Ужин на двоих сам себя не выиграет. 🍽️',
+    'Лучший кейс — тот, что <b>опубликован</b>. Идеальный — потом. 💪',
+    'Ты не участник. Ты тот, за кем <b>тянется команда</b>. ⚔️',
+    'Claude сделал полработы. Вторую — твоя <b>смелость нажать «отправить»</b>. ⚡',
+    'Жюри любит цифры. У тебя они <b>есть</b>. Покажи их. 📊'
+  ];
+  const colors=['#fbbf24','#f43f5e','#3b82f6','#22d3ee','#34d399','#f59e0b'];
+
+  function fireConfetti(n=120){
+    for(let i=0;i<n;i++){
+      const c=document.createElement('div');
+      c.className='confetti';
+      c.style.left=Math.random()*100+'vw';
+      c.style.background=colors[i%colors.length];
+      const dur=2.6+Math.random()*2.2, delay=Math.random()*.5;
+      c.style.animation=`fall ${dur}s ${delay}s cubic-bezier(.2,.6,.4,1) forwards`;
+      c.style.transform=`translateY(-20px) rotate(${Math.random()*360}deg)`;
+      if(Math.random()>.6){c.style.width='8px';c.style.height='8px';c.style.borderRadius='50%';}
+      document.body.appendChild(c);
+      setTimeout(()=>c.remove(),(dur+delay)*1000+200);
+    }
+  }
+  function openModal(){
+    quoteEl.innerHTML=quotes[Math.floor(Math.random()*quotes.length)];
+    modal.classList.add('open');
+    document.body.style.overflow='hidden';
+    fireConfetti();
+  }
+  function closeModal(){modal.classList.remove('open');document.body.style.overflow='';}
+
+  document.getElementById('publishBtn').addEventListener('click',openModal);
+  document.getElementById('modalClose').addEventListener('click',closeModal);
+  modal.addEventListener('click',e=>{if(e.target===modal)closeModal();});
+  addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
+
+  // copy hashtag
+  const tag=document.getElementById('copyTag');
+  tag.addEventListener('click',()=>{
+    navigator.clipboard?.writeText('#кейс_ФИО_лига').then(()=>{
+      const old=tag.innerHTML;
+      tag.classList.add('copied');tag.innerHTML='✓ Скопировано!';
+      setTimeout(()=>{tag.classList.remove('copied');tag.innerHTML=old;},1600);
+    }).catch(()=>{});
+  });
+
+  // chat button → extra confetti burst, then (place real chat link here)
+  document.getElementById('goChat').addEventListener('click',e=>{
+    e.preventDefault();
+    fireConfetti(60);
+    // TODO: заменить на реальную ссылку чата «Claude»
+  });
 </script>
 </body>
 </html>
