@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>⚔️ Битва кейсов — турнир по применению Claude</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Unbounded:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#070b1f;
+    --bg2:#0c1330;
+    --ink:#eef2ff;
+    --muted:#9aa6cf;
+    --blue:#3b82f6;
+    --blue-l:#60a5fa;
+    --cyan:#22d3ee;
+    --gold:#fbbf24;
+    --gold-d:#f59e0b;
+    --crimson:#f43f5e;
+    --green:#34d399;
+    --card:rgba(255,255,255,.04);
+    --card-bd:rgba(255,255,255,.09);
+    --glow:0 0 60px rgba(59,130,246,.35);
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    font-family:'Manrope',system-ui,-apple-system,'Segoe UI',sans-serif;
+    background:var(--bg);
+    color:var(--ink);
+    overflow-x:hidden;
+    line-height:1.6;
+  }
+  h1,h2,h3,.display{font-family:'Unbounded','Manrope',sans-serif;letter-spacing:-.5px}
+  ::selection{background:var(--blue);color:#fff}
+
+  /* ===== Animated background ===== */
+  .bg-fx{position:fixed;inset:0;z-index:-2;overflow:hidden}
+  .bg-fx::before{
+    content:'';position:absolute;inset:-20%;
+    background:
+      radial-gradient(40vw 40vw at 15% 10%, rgba(59,130,246,.25), transparent 60%),
+      radial-gradient(45vw 45vw at 85% 20%, rgba(244,63,94,.18), transparent 60%),
+      radial-gradient(50vw 50vw at 50% 100%, rgba(34,211,238,.16), transparent 60%);
+    animation:drift 18s ease-in-out infinite alternate;
+  }
+  @keyframes drift{to{transform:translate3d(0,-4%,0) scale(1.08)}}
+  .grid-fx{position:fixed;inset:0;z-index:-2;
+    background-image:linear-gradient(rgba(255,255,255,.04) 1px,transparent 1px),
+                     linear-gradient(90deg,rgba(255,255,255,.04) 1px,transparent 1px);
+    background-size:54px 54px;
+    mask-image:radial-gradient(circle at 50% 30%,#000 0%,transparent 75%);
+    -webkit-mask-image:radial-gradient(circle at 50% 30%,#000 0%,transparent 75%);
+  }
+  .spark{position:fixed;z-index:-1;font-size:24px;opacity:.0;animation:floatUp linear infinite;filter:drop-shadow(0 0 8px rgba(96,165,250,.6))}
+  @keyframes floatUp{
+    0%{transform:translateY(20vh) rotate(0deg);opacity:0}
+    10%{opacity:.5}
+    90%{opacity:.5}
+    100%{transform:translateY(-110vh) rotate(360deg);opacity:0}
+  }
+
+  /* ===== Layout ===== */
+  .wrap{max-width:1120px;margin:0 auto;padding:0 24px}
+  section{padding:96px 0;position:relative}
+  .eyebrow{display:inline-flex;align-items:center;gap:8px;font-weight:700;font-size:13px;letter-spacing:2px;text-transform:uppercase;color:var(--blue-l);
+    padding:8px 16px;border:1px solid var(--card-bd);border-radius:999px;background:var(--card);backdrop-filter:blur(8px)}
+  .sec-title{font-size:clamp(28px,4.5vw,46px);font-weight:800;margin:18px 0 14px;line-height:1.08}
+  .sec-sub{color:var(--muted);font-size:clamp(15px,1.7vw,18px);max-width:620px}
+  .grad{background:linear-gradient(120deg,var(--blue-l),var(--cyan) 60%,var(--gold));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .grad-gold{background:linear-gradient(120deg,var(--gold),var(--crimson));-webkit-background-clip:text;background-clip:text;color:transparent}
+
+  /* ===== Nav ===== */
+  nav{position:fixed;top:0;left:0;right:0;z-index:50;transition:.4s}
+  .nav-in{display:flex;align-items:center;justify-content:space-between;max-width:1120px;margin:0 auto;padding:16px 24px}
+  nav.scrolled{background:rgba(7,11,31,.72);backdrop-filter:blur(14px);border-bottom:1px solid var(--card-bd)}
+  .logo{display:flex;align-items:center;gap:10px;font-family:'Unbounded';font-weight:700;font-size:18px}
+  .logo .sw{animation:swing 3s ease-in-out infinite;display:inline-block}
+  @keyframes swing{0%,100%{transform:rotate(-12deg)}50%{transform:rotate(12deg)}}
+  .nav-links{display:flex;gap:26px}
+  .nav-links a{color:var(--muted);text-decoration:none;font-weight:600;font-size:14px;transition:.2s}
+  .nav-links a:hover{color:var(--ink)}
+  @media(max-width:760px){.nav-links{display:none}}
+
+  /* ===== Buttons ===== */
+  .btn{display:inline-flex;align-items:center;gap:10px;font-weight:700;font-size:15px;text-decoration:none;padding:15px 28px;border-radius:14px;cursor:pointer;border:none;transition:transform .25s,box-shadow .25s}
+  .btn-primary{background:linear-gradient(120deg,var(--blue),var(--cyan));color:#04122e;box-shadow:0 10px 30px rgba(34,211,238,.35)}
+  .btn-primary:hover{transform:translateY(-3px) scale(1.02);box-shadow:0 16px 44px rgba(34,211,238,.5)}
+  .btn-ghost{background:var(--card);color:var(--ink);border:1px solid var(--card-bd)}
+  .btn-ghost:hover{transform:translateY(-3px);border-color:var(--blue-l)}
+
+  /* ===== Hero ===== */
+  .hero{min-height:100vh;display:flex;flex-direction:column;justify-content:center;text-align:center;padding-top:80px}
+  .hero h1{font-size:clamp(42px,9vw,104px);line-height:.95;font-weight:800;margin:24px 0}
+  .hero h1 .swords{display:inline-block;animation:pulse 2.4s ease-in-out infinite;filter:drop-shadow(0 0 24px rgba(244,63,94,.6))}
+  @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.12)}}
+  .hero p.lead{font-size:clamp(17px,2.3vw,22px);color:var(--muted);max-width:680px;margin:0 auto 36px}
+  .hero .cta{display:flex;gap:16px;justify-content:center;flex-wrap:wrap}
+  .hero-stats{display:flex;gap:40px;justify-content:center;flex-wrap:wrap;margin-top:64px}
+  .hstat{text-align:center}
+  .hstat .n{font-family:'Unbounded';font-size:clamp(28px,4vw,42px);font-weight:800;line-height:1}
+  .hstat .l{color:var(--muted);font-size:13px;text-transform:uppercase;letter-spacing:1.5px;margin-top:8px}
+  .scroll-hint{position:absolute;bottom:28px;left:50%;transform:translateX(-50%);color:var(--muted);font-size:12px;letter-spacing:2px;text-transform:uppercase;display:flex;flex-direction:column;align-items:center;gap:8px;animation:bob 2s ease-in-out infinite}
+  @keyframes bob{50%{transform:translate(-50%,8px)}}
+
+  /* ===== Reveal ===== */
+  .reveal{opacity:0;transform:translateY(36px);transition:opacity .7s cubic-bezier(.2,.7,.2,1),transform .7s cubic-bezier(.2,.7,.2,1)}
+  .reveal.in{opacity:1;transform:none}
+  .reveal.d1{transition-delay:.08s}.reveal.d2{transition-delay:.16s}.reveal.d3{transition-delay:.24s}.reveal.d4{transition-delay:.32s}
+
+  /* ===== Cards / grids ===== */
+  .grid{display:grid;gap:20px}
+  .g2{grid-template-columns:repeat(2,1fr)}
+  .g3{grid-template-columns:repeat(3,1fr)}
+  .g4{grid-template-columns:repeat(4,1fr)}
+  @media(max-width:900px){.g3,.g4{grid-template-columns:repeat(2,1fr)}}
+  @media(max-width:620px){.g2,.g3,.g4{grid-template-columns:1fr}}
+  .card{background:var(--card);border:1px solid var(--card-bd);border-radius:20px;padding:28px;backdrop-filter:blur(10px);transition:transform .3s,border-color .3s,box-shadow .3s;position:relative;overflow:hidden}
+  .card:hover{transform:translateY(-6px);border-color:rgba(96,165,250,.5);box-shadow:0 20px 50px rgba(0,0,0,.4)}
+  .card .ic{font-size:34px;margin-bottom:14px;display:block}
+  .card h3{font-size:19px;font-weight:700;margin-bottom:8px}
+  .card p{color:var(--muted);font-size:15px}
+  .card .shine{position:absolute;top:-50%;left:-60%;width:60%;height:200%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.07),transparent);transform:rotate(20deg);transition:.6s}
+  .card:hover .shine{left:120%}
+
+  /* league cards */
+  .league{padding:34px;border-radius:24px;position:relative;overflow:hidden}
+  .league.new{background:linear-gradient(160deg,rgba(52,211,153,.14),rgba(52,211,153,.03));border:1px solid rgba(52,211,153,.3)}
+  .league.pro{background:linear-gradient(160deg,rgba(59,130,246,.16),rgba(59,130,246,.03));border:1px solid rgba(59,130,246,.32)}
+  .league .tag{font-size:13px;font-weight:700;letter-spacing:1px;text-transform:uppercase}
+  .league.new .tag{color:var(--green)}.league.pro .tag{color:var(--blue-l)}
+  .league h3{font-size:28px;margin:8px 0 12px}
+  .league p{color:var(--muted)}
+  .league .big-emoji{position:absolute;right:-10px;top:-14px;font-size:120px;opacity:.08}
+
+  /* formula steps */
+  .flow{display:flex;align-items:stretch;gap:14px;flex-wrap:wrap;justify-content:center}
+  .step{flex:1;min-width:150px;background:var(--card);border:1px solid var(--card-bd);border-radius:16px;padding:22px;text-align:center;position:relative}
+  .step .num{width:34px;height:34px;border-radius:50%;background:linear-gradient(120deg,var(--blue),var(--cyan));color:#04122e;font-weight:800;display:flex;align-items:center;justify-content:center;margin:0 auto 12px}
+  .step h4{font-size:16px;margin-bottom:6px}
+  .step p{color:var(--muted);font-size:13px}
+  .step .arrow{position:absolute;right:-18px;top:50%;transform:translateY(-50%);color:var(--blue-l);font-size:22px;z-index:2}
+  @media(max-width:620px){.step .arrow{display:none}}
+
+  /* points / scoring */
+  .score-wrap{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+  @media(max-width:860px){.score-wrap{grid-template-columns:1fr}}
+  .meter{background:var(--card);border:1px solid var(--card-bd);border-radius:20px;padding:30px}
+  .bar-row{margin:18px 0}
+  .bar-row .lab{display:flex;justify-content:space-between;font-size:14px;margin-bottom:8px}
+  .bar-row .lab b{color:var(--gold)}
+  .bar{height:10px;border-radius:999px;background:rgba(255,255,255,.08);overflow:hidden}
+  .bar i{display:block;height:100%;width:0;border-radius:999px;background:linear-gradient(90deg,var(--blue),var(--cyan));transition:width 1.2s cubic-bezier(.2,.8,.2,1)}
+  .formula{font-family:'Unbounded';font-size:clamp(15px,2.2vw,20px);text-align:center;line-height:1.7;padding:24px;border-radius:18px;background:linear-gradient(120deg,rgba(59,130,246,.12),rgba(34,211,238,.06));border:1px solid var(--card-bd);margin-top:8px}
+  .chip{display:inline-block;padding:4px 12px;border-radius:999px;font-size:13px;font-weight:700;margin:3px}
+  .chip.j{background:rgba(59,130,246,.18);color:var(--blue-l)}
+  .chip.n{background:rgba(52,211,153,.16);color:var(--green)}
+  .chip.b{background:rgba(251,191,36,.16);color:var(--gold)}
+
+  .bonus li{list-style:none;display:flex;justify-content:space-between;align-items:center;padding:13px 0;border-bottom:1px dashed var(--card-bd);font-size:15px}
+  .bonus li:last-child{border:0}
+  .bonus .pts{font-family:'Unbounded';font-weight:700;color:var(--gold)}
+
+  /* timeline */
+  .timeline{position:relative;margin-top:30px;padding-left:8px}
+  .timeline::before{content:'';position:absolute;left:21px;top:6px;bottom:6px;width:2px;background:linear-gradient(var(--blue),var(--cyan),var(--gold))}
+  .tl-item{display:flex;gap:22px;margin-bottom:26px;position:relative}
+  .tl-dot{flex:none;width:44px;height:44px;border-radius:50%;background:var(--bg2);border:2px solid var(--blue);display:flex;align-items:center;justify-content:center;font-size:20px;z-index:2;box-shadow:0 0 0 6px rgba(59,130,246,.08)}
+  .tl-body{background:var(--card);border:1px solid var(--card-bd);border-radius:16px;padding:18px 22px;flex:1}
+  .tl-body .when{font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--cyan)}
+  .tl-body h4{font-size:18px;margin:4px 0 6px}
+  .tl-body p{color:var(--muted);font-size:14px}
+  .weeks{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+  .week{font-size:13px;padding:7px 12px;border-radius:10px;background:rgba(255,255,255,.05);border:1px solid var(--card-bd);color:var(--ink)}
+  .week b{color:var(--gold)}
+
+  /* prizes */
+  .podium{display:grid;grid-template-columns:1fr 1.15fr 1fr;gap:18px;align-items:end}
+  @media(max-width:680px){.podium{grid-template-columns:1fr}}
+  .prize{border-radius:20px;padding:26px;text-align:center;border:1px solid var(--card-bd);position:relative;overflow:hidden}
+  .prize .pl{font-family:'Unbounded';font-size:40px;font-weight:800;line-height:1}
+  .prize h4{margin:10px 0 8px;font-size:17px}
+  .prize p{color:var(--muted);font-size:14px}
+  .prize.first{background:linear-gradient(160deg,rgba(251,191,36,.18),rgba(244,63,94,.06));border-color:rgba(251,191,36,.4);transform:translateY(-12px)}
+  .prize.first .pl{color:var(--gold)}
+  .prize.second .pl{color:#cbd5e1}.prize.third .pl{color:#d6a06a}
+  .grandprix{margin-top:24px;border-radius:24px;padding:34px;text-align:center;background:linear-gradient(120deg,rgba(244,63,94,.16),rgba(251,191,36,.12));border:1px solid rgba(251,191,36,.4);position:relative;overflow:hidden}
+  .grandprix .ic{font-size:50px}
+  .grandprix h3{font-size:26px;margin:8px 0}
+  .nominations{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:24px}
+  @media(max-width:760px){.nominations{grid-template-columns:repeat(2,1fr)}}
+  @media(max-width:440px){.nominations{grid-template-columns:1fr}}
+  .nom{background:var(--card);border:1px solid var(--card-bd);border-radius:14px;padding:18px;text-align:center}
+  .nom .ic{font-size:26px}.nom h5{font-size:14px;margin:8px 0 4px}.nom p{font-size:12px;color:var(--muted)}
+
+  /* rules */
+  .rules{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media(max-width:620px){.rules{grid-template-columns:1fr}}
+  .rule{display:flex;gap:12px;align-items:flex-start;background:rgba(244,63,94,.06);border:1px solid rgba(244,63,94,.2);border-radius:14px;padding:16px}
+  .rule .x{color:var(--crimson);font-size:20px;flex:none}
+
+  /* final CTA */
+  .final{text-align:center;border-radius:28px;padding:64px 32px;background:
+      radial-gradient(60% 80% at 50% 0%,rgba(59,130,246,.22),transparent),
+      linear-gradient(160deg,rgba(255,255,255,.05),rgba(255,255,255,.02));
+    border:1px solid var(--card-bd);position:relative;overflow:hidden}
+  .final h2{font-size:clamp(28px,5vw,52px);margin-bottom:16px}
+  .final p{color:var(--muted);max-width:560px;margin:0 auto 32px;font-size:18px}
+
+  footer{padding:48px 0 40px;text-align:center;color:var(--muted);font-size:14px;border-top:1px solid var(--card-bd)}
+  footer .org{margin-bottom:10px;color:var(--ink);font-weight:600}
+
+  .count{font-variant-numeric:tabular-nums}
+</style>
+</head>
+<body>
+
+<div class="bg-fx"></div>
+<div class="grid-fx"></div>
+
+<!-- NAV -->
+<nav id="nav">
+  <div class="nav-in">
+    <div class="logo"><span class="sw">⚔️</span> Битва&nbsp;кейсов</div>
+    <div class="nav-links">
+      <a href="#about">Суть</a>
+      <a href="#case">Что такое кейс</a>
+      <a href="#score">Баллы</a>
+      <a href="#timeline">Этапы</a>
+      <a href="#prizes">Призы</a>
+    </div>
+    <a href="#join" class="btn btn-primary" style="padding:11px 20px;font-size:14px">Участвовать</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<header class="hero wrap">
+  <div class="reveal in"><span class="eyebrow">⚡ Внутрикорпоративный турнир · 30 дней</span></div>
+  <h1 class="reveal in d1">Битва <span class="swords">⚔️</span> кейсов</h1>
+  <p class="lead reveal in d2">Покажи, как <b class="grad">Claude</b> изменил твою работу. Реальная задача → реальный результат → реальные призы. Не теория — практика, которая остаётся с тобой.</p>
+  <div class="cta reveal in d3">
+    <a href="#join" class="btn btn-primary">🚀 Влиться в битву</a>
+    <a href="#about" class="btn btn-ghost">Как это работает</a>
+  </div>
+  <div class="hero-stats reveal in d4">
+    <div class="hstat"><div class="n grad" data-count="30">0</div><div class="l">дней турнира</div></div>
+    <div class="hstat"><div class="n grad" data-count="2">0</div><div class="l">лиги</div></div>
+    <div class="hstat"><div class="n grad" data-count="50">0</div><div class="l">баллов за кейс</div></div>
+    <div class="hstat"><div class="n grad-gold" data-count="4">0</div><div class="l">недели тем</div></div>
+  </div>
+  <div class="scroll-hint">скролль вниз<span>↓</span></div>
+</header>
+
+<!-- ABOUT -->
+<section id="about" class="wrap">
+  <div class="reveal"><span class="eyebrow">01 — Зачем</span>
+  <h2 class="sec-title">Суть в одном предложении</h2></div>
+  <div class="reveal d1" style="margin:18px 0 40px">
+    <p style="font-family:'Unbounded';font-size:clamp(20px,3vw,30px);line-height:1.4;font-weight:600;max-width:880px">
+      Взял <span class="grad">рабочую задачу</span> → решил через Claude → показал результат <span class="grad-gold">в цифрах</span> → получил признание и призы.
+    </p>
+  </div>
+  <div class="grid g4">
+    <div class="card reveal"><div class="shine"></div><span class="ic">🎯</span><h3>Вовлечь всех</h3><p>Каждый отдел пробует Claude на живых задачах, а не на слайдах.</p></div>
+    <div class="card reveal d1"><div class="shine"></div><span class="ic">🤝</span><h3>Здоровый азарт</h3><p>Соревнование, табло лидеров и драйв — как в хорошем спорте.</p></div>
+    <div class="card reveal d2"><div class="shine"></div><span class="ic">💎</span><h3>Собрать кейсы</h3><p>Реальные бизнес-истории применения AI в одной базе компании.</p></div>
+    <div class="card reveal d3"><div class="shine"></div><span class="ic">🌐</span><h3>Делиться</h3><p>Лучшие практики расходятся по компании. Культура обмена знаниями.</p></div>
+  </div>
+</section>
+
+<!-- LEAGUES -->
+<section class="wrap" id="leagues">
+  <div class="reveal"><span class="eyebrow">02 — Честная игра</span>
+  <h2 class="sec-title">Две лиги — играешь со своими</h2>
+  <p class="sec-sub">Новичок не бьётся против гуру. Победители определяются отдельно в каждой лиге, плюс общий Гран-при над обеими.</p></div>
+  <div class="grid g2" style="margin-top:34px">
+    <div class="league new reveal">
+      <span class="big-emoji">🌱</span>
+      <span class="tag">Лига «Новички»</span>
+      <h3>Только начал с AI</h3>
+      <p>Для тех, кто впервые активно работает с AI-инструментами. Свой зачёт, свои призовые места — без давления «опытных».</p>
+    </div>
+    <div class="league pro reveal d1">
+      <span class="big-emoji">🔵</span>
+      <span class="tag">Лига «Опытные»</span>
+      <h3>Уже в теме</h3>
+      <p>Для тех, у кого есть опыт работы с AI. Здесь рубятся за глубину, изобретательность и масштаб эффекта.</p>
+    </div>
+  </div>
+  <p class="sec-sub reveal d2" style="margin-top:20px">Лига выбирается при регистрации. 🏅 <b style="color:var(--gold)">Гран-при</b> — у участника с максимальным итоговым баллом по обеим лигам.</p>
+</section>
+
+<!-- WHAT IS A CASE -->
+<section id="case" class="wrap">
+  <div class="reveal"><span class="eyebrow">03 — Главное</span>
+  <h2 class="sec-title">Что такое «кейс»</h2>
+  <p class="sec-sub">История о применении Claude для конкретной рабочей задачи. Собирается по простой формуле:</p></div>
+
+  <div class="flow reveal d1" style="margin:40px 0">
+    <div class="step"><div class="num">1</div><h4>Задача</h4><p>Что нужно было сделать</p><span class="arrow">→</span></div>
+    <div class="step"><div class="num">2</div><h4>Было</h4><p>Как решал раньше, без Claude</p><span class="arrow">→</span></div>
+    <div class="step"><div class="num">3</div><h4>Стало</h4><p>Промпт + результат с Claude</p><span class="arrow">→</span></div>
+    <div class="step"><div class="num">4</div><h4>Эффект</h4><p>Часы / % / деньги — в цифрах</p><span class="arrow">→</span></div>
+    <div class="step"><div class="num">5</div><h4>Автор</h4><p>Имя + отдел + вывод</p></div>
+  </div>
+
+  <div class="reveal d2"><h3 style="font-size:20px;margin:10px 0 18px">📦 Формат — на твой выбор</h3></div>
+  <div class="grid g4">
+    <div class="card reveal"><div class="shine"></div><span class="ic">📝</span><h3>Текст</h3><p>Пост в чате Claude, 200–500 слов + скриншоты.</p></div>
+    <div class="card reveal d1"><div class="shine"></div><span class="ic">🎬</span><h3>Видео</h3><p>Короткое видео на 1–3 минуты.</p></div>
+    <div class="card reveal d2"><div class="shine"></div><span class="ic">📊</span><h3>Презентация</h3><p>3–5 слайдов с разбором.</p></div>
+    <div class="card reveal d3"><div class="shine"></div><span class="ic">🎙️</span><h3>Интервью</h3><p>5-минутная запись беседы с автором.</p></div>
+  </div>
+  <p class="sec-sub reveal" style="margin-top:24px">Публикуется в чате <b>«Claude»</b> с хэштегом <code style="background:var(--card);padding:3px 10px;border-radius:8px;color:var(--cyan)">#кейс_ФИО_лига</code>. Кейс — из реальной задачи, оригинальный, без конфиденциальных данных.</p>
+</section>
+
+<!-- SCORING -->
+<section id="score" class="wrap">
+  <div class="reveal"><span class="eyebrow">04 — Как считаются баллы</span>
+  <h2 class="sec-title">Система оценки</h2>
+  <p class="sec-sub">5 критериев × 10 баллов = до 50 за один кейс. Плюс народное голосование и бонусы за активность.</p></div>
+
+  <div class="score-wrap" style="margin-top:34px">
+    <div class="meter reveal">
+      <h3 style="font-size:18px;margin-bottom:6px">⚖️ Оценка жюри · до 50</h3>
+      <div class="bar-row"><div class="lab"><span>Практическая ценность</span><b>10</b></div><div class="bar"><i data-w="100"></i></div></div>
+      <div class="bar-row"><div class="lab"><span>Измеримость результата</span><b>10</b></div><div class="bar"><i data-w="100"></i></div></div>
+      <div class="bar-row"><div class="lab"><span>Креативность</span><b>10</b></div><div class="bar"><i data-w="100"></i></div></div>
+      <div class="bar-row"><div class="lab"><span>Воспроизводимость</span><b>10</b></div><div class="bar"><i data-w="100"></i></div></div>
+      <div class="bar-row"><div class="lab"><span>Качество подачи</span><b>10</b></div><div class="bar"><i data-w="100"></i></div></div>
+    </div>
+
+    <div class="meter reveal d1">
+      <h3 style="font-size:18px;margin-bottom:14px">🎁 Бонусы за активность</h3>
+      <ul class="bonus">
+        <li><span>Помощь коллеге с промптом</span><span class="pts">+5</span></li>
+        <li><span>Реакция / комментарий к кейсу</span><span class="pts">+2</span></li>
+        <li><span>Промпт в общую базу компании</span><span class="pts">+10</span></li>
+        <li><span>Мини-обучение коллеги 1-на-1</span><span class="pts">+15</span></li>
+        <li><span>Выступление на практикуме</span><span class="pts">+20</span></li>
+        <li><span>Победа «Кейс недели»</span><span class="pts">+30</span></li>
+      </ul>
+      <div style="margin-top:16px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+        <span style="color:var(--muted);font-size:14px">Эмодзи-голосование:</span>
+        <span class="week">🔥 огонь</span><span class="week">💡 узнал</span><span class="week">💪 в работу</span><span class="week">🚀 креатив</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="reveal d2">
+    <div class="formula">
+      Итог = <span class="chip j">Жюри × 0.5</span> + <span class="chip n">Народ × 0.3</span> + <span class="chip b">Бонусы × 0.2</span>
+      <div style="font-family:'Manrope';font-size:14px;color:var(--muted);margin-top:14px;line-height:1.6">
+        Народные баллы = (голоса коллег × 2) + (реакции 🔥💡💪🚀 × 1). За свой кейс голосовать нельзя.
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TIMELINE -->
+<section id="timeline" class="wrap">
+  <div class="reveal"><span class="eyebrow">05 — Дорожная карта</span>
+  <h2 class="sec-title">Этапы и сроки</h2></div>
+
+  <div class="timeline">
+    <div class="tl-item reveal">
+      <div class="tl-dot">⚔️</div>
+      <div class="tl-body"><div class="when">День 1</div><h4>Старт. Разведка боем</h4><p>Анонс конкурса, регистрация участников по лигам, объявление темы первой недели.</p></div>
+    </div>
+    <div class="tl-item reveal d1">
+      <div class="tl-dot">💥</div>
+      <div class="tl-body"><div class="when">Дни 2–25</div><h4>Атака идеями. Сбор кейсов</h4><p>Публикуем кейсы, бьёмся за «Кейс недели», голосуем эмодзи. Раз в неделю — ТОП-5 лидеров в чате.</p>
+        <div class="weeks">
+          <span class="week"><b>Нед.1</b> сэкономил время</span>
+          <span class="week"><b>Нед.2</b> креатив</span>
+          <span class="week"><b>Нед.3</b> горжусь</span>
+          <span class="week"><b>Нед.4</b> помог коллегам</span>
+        </div>
+      </div>
+    </div>
+    <div class="tl-item reveal d2">
+      <div class="tl-dot">📊</div>
+      <div class="tl-body"><div class="when">Дни 26–28</div><h4>Подведение итогов</h4><p>Жюри финализирует оценки, народное голосование за «Народного любимца», подсчёт баллов.</p></div>
+    </div>
+    <div class="tl-item reveal d3">
+      <div class="tl-dot">🏆</div>
+      <div class="tl-body"><div class="when">Дни 29–30</div><h4>Объявление итогов</h4><p>Награждение на общем собрании компании: победители двух лиг, Гран-при и индивидуальные номинации.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- PRIZES -->
+<section id="prizes" class="wrap">
+  <div class="reveal"><span class="eyebrow">06 — За что бьёмся</span>
+  <h2 class="sec-title grad-gold">Призы</h2>
+  <p class="sec-sub">Места разыгрываются в каждой лиге отдельно. Плюс еженедельные и именные награды.</p></div>
+
+  <div class="podium reveal d1" style="margin-top:40px">
+    <div class="prize second"><div class="pl">2</div><h4>🥈 Второе место</h4><p>Сертификат 2 000 ₽ (Кофе / Озон) + публичное признание</p></div>
+    <div class="prize first"><div class="pl">1</div><h4>🥇 Первое место</h4><p>Сертификат 3 000 ₽ + <b style="color:var(--gold)">1 день отпуска</b> + публичное признание</p></div>
+    <div class="prize third"><div class="pl">3</div><h4>🥉 Третье место</h4><p>Сертификат 1 000 ₽ (Кофе / Озон) + публичное признание</p></div>
+  </div>
+
+  <div class="grandprix reveal d2">
+    <div class="ic">🏆</div>
+    <h3 class="grad-gold">Гран-при конкурса</h3>
+    <p style="color:var(--ink);font-size:18px">Ужин в ресторане <b>на двоих за счёт компании</b> + публичное признание перед всей компанией.</p>
+  </div>
+
+  <div class="grid g2 reveal d3" style="margin-top:18px">
+    <div class="card"><span class="ic">📅</span><h3>«Кейс недели» ×4</h3><p>Каждую неделю: сертификат 3 000 ₽ + публичное признание + <b style="color:var(--gold)">+30 бонусных баллов</b> в рейтинг.</p></div>
+    <div class="card"><span class="ic">🎖️</span><h3>Индивидуальные номинации</h3><p>За каждую — <b style="color:var(--gold)">дополнительный день оплачиваемого отпуска</b> + признание.</p></div>
+  </div>
+
+  <div class="nominations reveal d3">
+    <div class="nom"><div class="ic">⏱️</div><h5>Самый сэкономленный час</h5><p>лучшая автоматизация рутины</p></div>
+    <div class="nom"><div class="ic">💥</div><h5>Креативный взрыв</h5><p>самое неожиданное применение</p></div>
+    <div class="nom"><div class="ic">🧑‍🏫</div><h5>AI-наставник</h5><p>кто больше всех помог коллегам</p></div>
+    <div class="nom"><div class="ic">❤️</div><h5>Народный любимец</h5><p>по голосованию сотрудников</p></div>
+  </div>
+</section>
+
+<!-- RULES -->
+<section class="wrap">
+  <div class="reveal"><span class="eyebrow">07 — Честная игра</span>
+  <h2 class="sec-title">Правила, которые нельзя нарушать</h2></div>
+  <div class="rules reveal d1" style="margin-top:28px">
+    <div class="rule"><span class="x">✕</span><div>Запрещены сговоры и накрутка голосов</div></div>
+    <div class="rule"><span class="x">✕</span><div>Запрещено выдавать чужие кейсы за свои</div></div>
+    <div class="rule"><span class="x">✕</span><div>Нельзя голосовать за собственный кейс</div></div>
+    <div class="rule"><span class="x">✕</span><div>Жюри вправе снять кейс за нарушение правил</div></div>
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section id="join" class="wrap">
+  <div class="final reveal">
+    <span class="eyebrow">Готов?</span>
+    <h2>Первый кейс — <span class="grad">сегодня</span></h2>
+    <p>Один кейс в день первой недели — и ты в ТОП-5 лидеров. Дальше включается снежный ком. Выкладывай в чат «Claude» и забирай свои баллы.</p>
+    <div class="cta" style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap">
+      <a href="#" class="btn btn-primary">🚀 Опубликовать первый кейс</a>
+      <a href="#case" class="btn btn-ghost">Вспомнить формулу кейса</a>
+    </div>
+  </div>
+</section>
+
+<footer class="wrap">
+  <div class="org">Организатор: HR-департамент · Координаторы: Емелина Е., Садриев И.</div>
+  <div>Канал «Онлайн Школа Азата Валеева», раздел «Claude» · База кейсов на корпоративном портале</div>
+  <div style="margin-top:14px;opacity:.6">⚔️ Битва кейсов · программа внедрения Claude в работу компании</div>
+</footer>
+
+<!-- sparks -->
+<script>
+  // floating sparks
+  const icons=['⚔️','✨','🔥','💡','🚀','💎'];
+  for(let i=0;i<14;i++){
+    const s=document.createElement('div');
+    s.className='spark';s.textContent=icons[i%icons.length];
+    s.style.left=Math.random()*100+'vw';
+    s.style.fontSize=(14+Math.random()*22)+'px';
+    s.style.animationDuration=(10+Math.random()*16)+'s';
+    s.style.animationDelay=(-Math.random()*20)+'s';
+    document.body.appendChild(s);
+  }
+
+  // nav scroll
+  const nav=document.getElementById('nav');
+  addEventListener('scroll',()=>nav.classList.toggle('scrolled',scrollY>40));
+
+  // reveal on scroll
+  const io=new IntersectionObserver((es)=>{
+    es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}})
+  },{threshold:.15});
+  document.querySelectorAll('.reveal:not(.in)').forEach(el=>io.observe(el));
+
+  // animate bars
+  const bio=new IntersectionObserver((es)=>{
+    es.forEach(e=>{if(e.isIntersecting){const i=e.target;i.style.width=i.dataset.w+'%';bio.unobserve(i)}})
+  },{threshold:.5});
+  document.querySelectorAll('.bar i').forEach(b=>bio.observe(b));
+
+  // count up
+  const cio=new IntersectionObserver((es)=>{
+    es.forEach(e=>{
+      if(!e.isIntersecting)return;
+      const el=e.target,end=+el.dataset.count;let t0=null;
+      const step=ts=>{if(!t0)t0=ts;const p=Math.min((ts-t0)/1100,1);
+        el.textContent=Math.round(end*(1-Math.pow(1-p,3)));
+        if(p<1)requestAnimationFrame(step)};
+      requestAnimationFrame(step);cio.unobserve(el);
+    })
+  },{threshold:.6});
+  document.querySelectorAll('[data-count]').forEach(el=>cio.observe(el));
+</script>
+</body>
+</html>
